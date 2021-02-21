@@ -7,14 +7,14 @@ import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowManager
 import com.example.myshoppal.R
-import com.example.myshoppal.databinding.ActivityLoginBinding
+import com.example.myshoppal.databinding.ActivityRegisterBinding
 
-class LoginActivity : AppCompatActivity(R.layout.activity_login) {
-    private lateinit var binding: ActivityLoginBinding
+class RegisterActivity : AppCompatActivity(R.layout.activity_register) {
+    private lateinit var binding: ActivityRegisterBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -27,9 +27,10 @@ class LoginActivity : AppCompatActivity(R.layout.activity_login) {
             )
         }
 
-        binding.tvRegister.setOnClickListener {
-            val intent = Intent(this, RegisterActivity::class.java)
+        binding.tvLogin.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 }
