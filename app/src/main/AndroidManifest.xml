@@ -9,7 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyShopPal">
-        <activity android:name=".ui.BaseActivity"></activity>
+        <activity android:name=".ui.ForgotPasswordActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".ui.BaseActivity" />
         <activity
             android:name=".ui.RegisterActivity"
             android:screenOrientation="portrait"

@@ -2,15 +2,15 @@ package com.example.myshoppal.ui
 
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.WindowInsets
 import android.view.WindowManager
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityRegisterBinding
+import com.google.firebase.auth.FirebaseAuth
 
-class RegisterActivity : BaseActivity(R.layout.activity_register) {
+class RegisterActivity : BaseActivity() {
     private lateinit var binding: ActivityRegisterBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,13 +31,26 @@ class RegisterActivity : BaseActivity(R.layout.activity_register) {
         setupActionBar()
 
         binding.tvLogin.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
+            onBackPressed()
         }
 
         binding.btnRegister.setOnClickListener {
-            validateRegisterDetails()
+            if(validateRegisterDetails()) {
+                showProgressDialog(getString(R.string.please_wait))
+                FirebaseAuth.getInstance().createUserWithEmailAndPassword(
+                    binding.etEmail.text.toString(), binding.etPassword.text.toString()
+                ).addOnCompleteListener {
+                    hideProgressDialog()
+                    if (it.isSuccessful){
+                        val firebaseUser = it.result?.user
+                        showSnackBar("You successful register! Uid = ${firebaseUser?.uid}", false)
+                        FirebaseAuth.getInstance().signOut()
+                        finish()
+                    } else {
+                        showSnackBar("Error: ${it.exception?.message}", true)
+                    }
+                }
+            }
         }
     }
 
@@ -56,27 +69,27 @@ class RegisterActivity : BaseActivity(R.layout.activity_register) {
     private fun validateRegisterDetails(): Boolean {
         return when {
             TextUtils.isEmpty(binding.etFirstName.text.toString().trim { it <= ' ' }) -> {
-                showErrorSnackBar(resources.getString(R.string.err_msg_enter_first_name), true)
+                showSnackBar(resources.getString(R.string.err_msg_enter_first_name), true)
                 false
             }
 
             TextUtils.isEmpty(binding.etLastName.text.toString().trim { it <= ' ' }) -> {
-                showErrorSnackBar(resources.getString(R.string.err_msg_enter_last_name), true)
+                showSnackBar(resources.getString(R.string.err_msg_enter_last_name), true)
                 false
             }
 
             TextUtils.isEmpty(binding.etEmail.text.toString().trim { it <= ' ' }) -> {
-                showErrorSnackBar(resources.getString(R.string.err_msg_enter_email), true)
+                showSnackBar(resources.getString(R.string.err_msg_enter_email), true)
                 false
             }
 
             TextUtils.isEmpty(binding.etPassword.text.toString().trim { it <= ' ' }) -> {
-                showErrorSnackBar(resources.getString(R.string.err_msg_enter_password), true)
+                showSnackBar(resources.getString(R.string.err_msg_enter_password), true)
                 false
             }
 
             TextUtils.isEmpty(binding.etConfirmPassword.text.toString().trim { it <= ' ' }) -> {
-                showErrorSnackBar(
+                showSnackBar(
                     resources.getString(R.string.err_msg_enter_confirm_password),
                     true
                 )
@@ -86,21 +99,20 @@ class RegisterActivity : BaseActivity(R.layout.activity_register) {
             binding.etPassword.text.toString()
                 .trim { it <= ' ' } != binding.etConfirmPassword.text.toString()
                 .trim { it <= ' ' } -> {
-                showErrorSnackBar(
+                showSnackBar(
                     resources.getString(R.string.err_msg_password_and_confirm_password_mismatch),
                     true
                 )
                 false
             }
             !binding.cbTermsAndCondition.isChecked -> {
-                showErrorSnackBar(
+                showSnackBar(
                     resources.getString(R.string.err_msg_agree_terms_and_condition),
                     true
                 )
                 false
             }
             else -> {
-                showErrorSnackBar(getString(R.string.registry_successfull), false)
                 true
             }
         }
