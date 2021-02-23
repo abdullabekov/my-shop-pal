@@ -12,6 +12,7 @@ import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityLoginBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.User
+import com.example.myshoppal.utils.Constants.EXTRA_USER_DETAILS
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : BaseActivity(), View.OnClickListener {
@@ -96,7 +97,13 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
         Log.i("Last name", user.lastName)
         Log.i("Email", user.email)
 
-        startActivity(Intent(this, MainActivity::class.java))
+        if (user.profileCompleted == 0) {
+            val intent = Intent(this, UserProfileActivity::class.java)
+            intent.putExtra(EXTRA_USER_DETAILS, user)
+            startActivity(intent)
+        } else {
+            startActivity(Intent(this, MainActivity::class.java))
+        }
         finish()
     }
 }

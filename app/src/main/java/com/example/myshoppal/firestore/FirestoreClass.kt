@@ -6,6 +6,7 @@ import android.util.Log
 import com.example.myshoppal.model.User
 import com.example.myshoppal.ui.LoginActivity
 import com.example.myshoppal.ui.RegisterActivity
+import com.example.myshoppal.ui.UserProfileActivity
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.USERS
@@ -53,11 +54,33 @@ class FirestoreClass {
                 editor.putString(LOGGED_IN_USERNAME, "${user.firstName} ${user.lastName}")
                 editor.apply()
 
-                when(activity) {
+                when (activity) {
                     is LoginActivity -> {
                         activity.userLoggedInSuccess(user)
                     }
                 }
+            }
+    }
+
+    fun updateUserProfileData(activity: Activity, userHashMap: HashMap<String, Any>) {
+        mFirestore.collection(USERS)
+            .document(getCurrentUserID())
+            .update(userHashMap)
+            .addOnSuccessListener {
+                when (activity) {
+                    is UserProfileActivity -> {
+                        activity.userProfileUpdateSuccess()
+                    }
+                }
+            }
+            .addOnFailureListener {
+                when (activity) {
+                    is UserProfileActivity -> {
+                        activity.hideProgressDialog()
+                    }
+                }
+
+                Log.e(activity.javaClass.simpleName, "Error while updating user details", it)
             }
     }
 }

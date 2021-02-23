@@ -16,4 +16,6 @@
     <color name="blueDark">#222934</color>
     <color name="snackBarError">#F72400</color>
     <color name="snackBarSuccess">#88C34A</color>
+
+    <color name="colorLightGrey">#F1F1F1</color>
 </resources>
