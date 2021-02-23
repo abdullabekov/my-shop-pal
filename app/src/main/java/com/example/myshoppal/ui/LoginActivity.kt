@@ -4,11 +4,14 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityLoginBinding
+import com.example.myshoppal.firestore.FirestoreClass
+import com.example.myshoppal.model.User
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : BaseActivity(), View.OnClickListener {
@@ -76,13 +79,24 @@ class LoginActivity : BaseActivity(), View.OnClickListener {
                 binding.etEmail.text.toString(),
                 binding.etPassword.text.toString()
             ).addOnCompleteListener {
-                hideProgressDialog()
                 if (it.isSuccessful) {
-                    showSnackBar("You uid is ${FirebaseAuth.getInstance().currentUser!!.uid}", false)
+                    FirestoreClass().getCurrentUser(this)
                 } else {
+                    hideProgressDialog()
                     showSnackBar("Error: ${it.exception?.message.toString()}", true)
                 }
             }
         }
+    }
+
+    fun userLoggedInSuccess(user: User) {
+        hideProgressDialog()
+
+        Log.i("First name", user.firstName)
+        Log.i("Last name", user.lastName)
+        Log.i("Email", user.email)
+
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }
