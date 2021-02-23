@@ -18,8 +18,10 @@ import com.example.myshoppal.databinding.ActivityUserProfileBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.User
 import com.example.myshoppal.utils.Constants
+import com.example.myshoppal.utils.Constants.COMPLETE_PROFILE
 import com.example.myshoppal.utils.Constants.FEMALE
 import com.example.myshoppal.utils.Constants.GENDER
+import com.example.myshoppal.utils.Constants.IMAGE
 import com.example.myshoppal.utils.Constants.MALE
 import com.example.myshoppal.utils.Constants.MOBILE
 import com.example.myshoppal.utils.Constants.PICK_IMAGE_REQUEST_CODE
@@ -32,6 +34,7 @@ class UserProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityUserProfileBinding
     private lateinit var user: User
     private var selectedImageUri: Uri = Uri.EMPTY
+    private var userProfileImageUrl: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,21 +78,37 @@ class UserProfileActivity : BaseActivity() {
             }
 
             btnSubmit.setOnClickListener {
-                showProgressDialog(getString(R.string.please_wait))
-                FirestoreClass().uploadImageToCloudStorage(this@UserProfileActivity, selectedImageUri)
                 if (validateUserProfile()) {
-                    val userHashMap = HashMap<String, Any>()
-                    val mobile = binding.etMobileNumber.text.toString().trim()
-                    val gender = if (binding.rbMale.isChecked) MALE else FEMALE
-                    userHashMap[MOBILE] = mobile.toLong()
-                    userHashMap[GENDER] = gender
-
                     showProgressDialog(getString(R.string.please_wait))
-
-                    FirestoreClass().updateUserProfileData(this@UserProfileActivity, userHashMap)
+                    /*
+                    Если была загружена картинка, то выполнить процесс ее загрузки в
+                    Cloud Storage. Затем будет выполнено обновление профиля в Firestore.
+                    В противном случае необходиом только обновить профиль в  Firestore.
+                     */
+                    if (selectedImageUri != Uri.EMPTY) {
+                        FirestoreClass().uploadImageToCloudStorage(
+                            this@UserProfileActivity,
+                            selectedImageUri
+                        )
+                    } else {
+                        updateUserProfile()
+                    }
                 }
             }
         }
+    }
+
+    private fun updateUserProfile() {
+        val userHashMap = HashMap<String, Any>()
+        val mobile = binding.etMobileNumber.text.toString().trim()
+        val gender = if (binding.rbMale.isChecked) MALE else FEMALE
+        userHashMap[MOBILE] = mobile.toLong()
+        userHashMap[GENDER] = gender
+        if (userProfileImageUrl.isNotEmpty()) {
+            userHashMap[IMAGE] = userProfileImageUrl
+        }
+        userHashMap[COMPLETE_PROFILE] = 1
+        FirestoreClass().updateUserProfileData(this@UserProfileActivity, userHashMap)
     }
 
     override fun onRequestPermissionsResult(
@@ -155,7 +174,7 @@ class UserProfileActivity : BaseActivity() {
     }
 
     fun imageUploadSuccess(url: String) {
-        hideProgressDialog()
-        Toast.makeText(this, "Image uploaded $url", Toast.LENGTH_LONG).show()
+        userProfileImageUrl = url
+        updateUserProfile()
     }
 }
