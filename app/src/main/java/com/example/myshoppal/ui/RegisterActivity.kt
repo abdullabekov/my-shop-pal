@@ -6,8 +6,11 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.Toast
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityRegisterBinding
+import com.example.myshoppal.firestore.FirestoreClass
+import com.example.myshoppal.model.User
 import com.google.firebase.auth.FirebaseAuth
 
 class RegisterActivity : BaseActivity() {
@@ -40,18 +43,29 @@ class RegisterActivity : BaseActivity() {
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(
                     binding.etEmail.text.toString(), binding.etPassword.text.toString()
                 ).addOnCompleteListener {
-                    hideProgressDialog()
                     if (it.isSuccessful){
                         val firebaseUser = it.result?.user
-                        showSnackBar("You successful register! Uid = ${firebaseUser?.uid}", false)
-                        FirebaseAuth.getInstance().signOut()
-                        finish()
+                        val user = User(
+                            firebaseUser!!.uid,
+                            binding.etFirstName.text.toString().trim { it <= ' ' },
+                            binding.etLastName.text.toString().trim { it <= ' ' },
+                            binding.etEmail.text.toString().trim { it <= ' ' }
+                        )
+                        FirestoreClass().registerUser(this@RegisterActivity, user)
                     } else {
+                        hideProgressDialog()
                         showSnackBar("Error: ${it.exception?.message}", true)
                     }
                 }
             }
         }
+    }
+
+    fun userRegistrationSuccess() {
+        hideProgressDialog()
+        Toast.makeText(this, getString(R.string.register_success), Toast.LENGTH_SHORT).show()
+        FirebaseAuth.getInstance().signOut()
+        finish()
     }
 
     private fun setupActionBar() {
