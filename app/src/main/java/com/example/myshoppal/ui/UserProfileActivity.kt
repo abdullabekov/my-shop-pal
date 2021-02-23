@@ -3,6 +3,7 @@ package com.example.myshoppal.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -30,6 +31,7 @@ import java.io.IOException
 class UserProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityUserProfileBinding
     private lateinit var user: User
+    private var selectedImageUri: Uri = Uri.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +75,8 @@ class UserProfileActivity : BaseActivity() {
             }
 
             btnSubmit.setOnClickListener {
+                showProgressDialog(getString(R.string.please_wait))
+                FirestoreClass().uploadImageToCloudStorage(this@UserProfileActivity, selectedImageUri)
                 if (validateUserProfile()) {
                     val userHashMap = HashMap<String, Any>()
                     val mobile = binding.etMobileNumber.text.toString().trim()
@@ -114,6 +118,7 @@ class UserProfileActivity : BaseActivity() {
             if (data != null) {
                 try {
                     data.data?.let {
+                        selectedImageUri = it
                         GlideLoader(this).loadUserPicture(it, binding.ivUserPhoto)
                     }
                 } catch (e: IOException) {
@@ -147,5 +152,10 @@ class UserProfileActivity : BaseActivity() {
         ).show()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    fun imageUploadSuccess(url: String) {
+        hideProgressDialog()
+        Toast.makeText(this, "Image uploaded $url", Toast.LENGTH_LONG).show()
     }
 }
