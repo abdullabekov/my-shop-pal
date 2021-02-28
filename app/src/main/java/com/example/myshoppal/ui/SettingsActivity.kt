@@ -9,7 +9,6 @@ import com.example.myshoppal.model.User
 import com.example.myshoppal.utils.Constants.EXTRA_USER_DETAILS
 import com.example.myshoppal.utils.GlideLoader
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
@@ -56,7 +55,7 @@ class SettingsActivity : BaseActivity() {
 
         this.user = user
 
-        GlideLoader(this).loadUserPicture(user.image, binding.ivUserPhoto)
+        GlideLoader(this).loadPicture(user.image, binding.ivUserPhoto)
 
         with (binding) {
             tvName.text = "${user.firstName} ${user.lastName}"

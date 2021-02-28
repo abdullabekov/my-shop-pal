@@ -7,7 +7,7 @@ import com.example.myshoppal.R
 import java.io.IOException
 
 class GlideLoader(val context: Context) {
-    fun loadUserPicture(imageSrc: Any, imageView: ImageView) {
+    fun loadPicture(imageSrc: Any, imageView: ImageView) {
         try {
             Glide.with(context)
                 .load(imageSrc)

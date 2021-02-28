@@ -4,12 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
-import android.view.WindowInsets
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -62,7 +58,7 @@ class UserProfileActivity : BaseActivity() {
             } else {
                 setupActionBar()
                 tvTitle.text = getString(R.string.title_edit_profile)
-                GlideLoader(this@UserProfileActivity).loadUserPicture(user.image, ivUserPhoto)
+                GlideLoader(this@UserProfileActivity).loadPicture(user.image, ivUserPhoto)
                 if (user.mobile != 0L) {
                     etMobileNumber.setText(user.mobile.toString())
                 }
@@ -95,7 +91,7 @@ class UserProfileActivity : BaseActivity() {
                     if (selectedImageUri != Uri.EMPTY) {
                         FirestoreClass().uploadImageToCloudStorage(
                             this@UserProfileActivity,
-                            selectedImageUri
+                            selectedImageUri, Constants.USER_PROFILE_IMAGE_PREFIX
                         )
                     } else {
                         updateUserProfile()
@@ -142,7 +138,7 @@ class UserProfileActivity : BaseActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_READ_EXTERNAL_STORAGE_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                Constants.showImageChooser(this)
             } else {
                 Toast.makeText(
                     this,
@@ -161,7 +157,7 @@ class UserProfileActivity : BaseActivity() {
                 try {
                     data.data?.let {
                         selectedImageUri = it
-                        GlideLoader(this).loadUserPicture(it, binding.ivUserPhoto)
+                        GlideLoader(this).loadPicture(it, binding.ivUserPhoto)
                     }
                 } catch (e: IOException) {
                     e.printStackTrace()
