@@ -15,6 +15,8 @@ object Constants {
     const val REQUEST_READ_EXTERNAL_STORAGE_CODE = 1
     const val PICK_IMAGE_REQUEST_CODE = 2
 
+    const val FIRST_NAME = "firstName"
+    const val LAST_NAME = "lastName"
     const val MALE = "male"
     const val FEMALE = "female"
     const val MOBILE = "mobile"

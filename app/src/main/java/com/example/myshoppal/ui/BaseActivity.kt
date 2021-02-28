@@ -1,18 +1,44 @@
 package com.example.myshoppal.ui
 
 import android.app.Dialog
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.os.PersistableBundle
+import android.view.WindowInsets
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.myshoppal.R
 import com.example.myshoppal.utils.MSPTextView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
 
 open class BaseActivity() : AppCompatActivity() {
     private lateinit var progressDialog: Dialog
     private var doubleBackToExitPressedOnce = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        lifecycleScope.launchWhenCreated {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.insetsController?.hide(WindowInsets.Type.statusBars())
+            } else {
+                @Suppress("DEPRECATION")
+                window.setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+                )
+            }
+        }
+    }
+
+    protected fun hideStatusBar() {
+
+    }
 
     fun showSnackBar(message: String, isErrorMessage: Boolean) {
         val snackBar =

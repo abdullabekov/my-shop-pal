@@ -20,8 +20,10 @@ import com.example.myshoppal.model.User
 import com.example.myshoppal.utils.Constants
 import com.example.myshoppal.utils.Constants.COMPLETE_PROFILE
 import com.example.myshoppal.utils.Constants.FEMALE
+import com.example.myshoppal.utils.Constants.FIRST_NAME
 import com.example.myshoppal.utils.Constants.GENDER
 import com.example.myshoppal.utils.Constants.IMAGE
+import com.example.myshoppal.utils.Constants.LAST_NAME
 import com.example.myshoppal.utils.Constants.MALE
 import com.example.myshoppal.utils.Constants.MOBILE
 import com.example.myshoppal.utils.Constants.PICK_IMAGE_REQUEST_CODE
@@ -41,25 +43,30 @@ class UserProfileActivity : BaseActivity() {
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.insetsController?.hide(WindowInsets.Type.statusBars())
-        } else {
-            @Suppress("DEPRECATION")
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
-        }
-
         user = intent.getParcelableExtra(Constants.EXTRA_USER_DETAILS) ?: User()
 
         with(binding) {
-            etFirstName.isEnabled = false
             etFirstName.setText(user.firstName)
-            etLastName.isEnabled = false
             etLastName.setText(user.lastName)
             etEmail.isEnabled = false
             etEmail.setText(user.email)
+            if(user.gender == MALE) {
+                rbMale.isChecked = true
+            } else {
+                rbFemale.isChecked = true
+            }
+            if (user.profileCompleted == 0) {
+                tvTitle.text = getString(R.string.title_complete_profile)
+                etFirstName.isEnabled = false
+                etLastName.isEnabled = false
+            } else {
+                setupActionBar()
+                tvTitle.text = getString(R.string.title_edit_profile)
+                GlideLoader(this@UserProfileActivity).loadUserPicture(user.image, ivUserPhoto)
+                if (user.mobile != 0L) {
+                    etMobileNumber.setText(user.mobile.toString())
+                }
+            }
 
             ivUserPhoto.setOnClickListener {
                 if (ContextCompat.checkSelfPermission(
@@ -98,12 +105,28 @@ class UserProfileActivity : BaseActivity() {
         }
     }
 
+    private fun setupActionBar() {
+        setSupportActionBar(binding.toolbarUserProfileActivity)
+
+        supportActionBar?.let {
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeAsUpIndicator(R.drawable.ic_back_color_white_24)
+        }
+
+        binding.toolbarUserProfileActivity.setNavigationOnClickListener { onBackPressed() }
+    }
+
     private fun updateUserProfile() {
         val userHashMap = HashMap<String, Any>()
+        val firstName = binding.etFirstName.text.toString().trim()
+        if (firstName != user.firstName) userHashMap[FIRST_NAME] = firstName
+        val lastName = binding.etLastName.text.toString().trim()
+        if (lastName != user.lastName) userHashMap[LAST_NAME] = lastName
         val mobile = binding.etMobileNumber.text.toString().trim()
         val gender = if (binding.rbMale.isChecked) MALE else FEMALE
-        userHashMap[MOBILE] = mobile.toLong()
-        userHashMap[GENDER] = gender
+        if (gender != user.gender) userHashMap[GENDER] = gender
+        if (mobile.isNotEmpty() && mobile != user.mobile.toString()) userHashMap[MOBILE] =
+            mobile.toLong()
         if (userProfileImageUrl.isNotEmpty()) {
             userHashMap[IMAGE] = userProfileImageUrl
         }
@@ -169,7 +192,7 @@ class UserProfileActivity : BaseActivity() {
             this, getString(R.string.msg_profile_update_success),
             Toast.LENGTH_LONG
         ).show()
-        startActivity(Intent(this, MainActivity::class.java))
+        startActivity(Intent(this, DashboardActivity::class.java))
         finish()
     }
 

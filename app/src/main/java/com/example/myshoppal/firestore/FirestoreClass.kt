@@ -5,9 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.myshoppal.model.User
-import com.example.myshoppal.ui.LoginActivity
-import com.example.myshoppal.ui.RegisterActivity
-import com.example.myshoppal.ui.UserProfileActivity
+import com.example.myshoppal.ui.*
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.USERS
@@ -62,6 +60,14 @@ class FirestoreClass {
                     is LoginActivity -> {
                         activity.userLoggedInSuccess(user)
                     }
+                    is SettingsActivity -> {
+                        activity.userDetailsSuccess(user)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                when (activity) {
+                    is BaseActivity -> activity.hideProgressDialog()
                 }
             }
     }
