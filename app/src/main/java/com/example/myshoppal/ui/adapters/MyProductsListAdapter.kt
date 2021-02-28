@@ -9,7 +9,6 @@ import com.example.myshoppal.model.Product
 import com.example.myshoppal.utils.GlideLoader
 
 open class MyProductsListAdapter(
-    private val context: Context,
     private val products: List<Product>
 ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -20,7 +19,7 @@ open class MyProductsListAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = products[position]
         with((holder as MyViewHolder).binding) {
-            GlideLoader(context).loadPicture(model.image, ivItemImage)
+            GlideLoader(holder.itemView.context).loadPicture(model.image, ivItemImage)
             tvItemName.text = model.title
             tvItemPrice.text = "$${model.price}"
         }

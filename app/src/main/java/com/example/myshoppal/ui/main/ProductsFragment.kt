@@ -43,7 +43,7 @@ class ProductsFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentProductsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -63,7 +63,7 @@ class ProductsFragment : BaseFragment() {
                 visibility = View.VISIBLE
                 layoutManager = LinearLayoutManager(context)
                 setHasFixedSize(true)
-                adapter = MyProductsListAdapter(context, products)
+                adapter = MyProductsListAdapter(products)
             }
         } else {
             binding.rvMyProductItems.visibility = View.GONE

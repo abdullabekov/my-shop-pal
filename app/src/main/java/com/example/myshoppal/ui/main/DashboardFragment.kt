@@ -6,26 +6,36 @@ import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.myshoppal.R
+import com.example.myshoppal.databinding.FragmentDashboardBinding
+import com.example.myshoppal.firestore.FirestoreClass
+import com.example.myshoppal.model.Product
 import com.example.myshoppal.ui.SettingsActivity
+import com.example.myshoppal.ui.adapters.DashboardItemsListAdapter
 
-class DashboardFragment : Fragment() {
+class DashboardFragment : BaseFragment() {
+    private var _binding: FragmentDashboardBinding? = null
+    private val binding
+        get() = _binding!!
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_dashboard, container, false)
-        val textView: TextView = root.findViewById(R.id.text_dashboard)
-//        dashboardViewModel.text.observe(viewLifecycleOwner, Observer {
-//            textView.text = it
-//        })
-        textView.text = "This is dashboard fragment."
-        return root
+        _binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -34,12 +44,38 @@ class DashboardFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_settings -> {
                 startActivity(Intent(activity, SettingsActivity::class.java))
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun successDashboardItemsList(items: List<Product>) {
+        hideProgressDialog()
+        if (items.isNotEmpty()) {
+            binding.rvDashboardItems.visibility = View.VISIBLE
+            binding.tvNoDashboardItemsFound.visibility = View.GONE
+            with(binding.rvDashboardItems) {
+                layoutManager = GridLayoutManager(requireContext(), 2)
+                setHasFixedSize(true)
+                adapter = DashboardItemsListAdapter(items)
+            }
+        } else {
+            binding.rvDashboardItems.visibility = View.GONE
+            binding.tvNoDashboardItemsFound.visibility = View.VISIBLE
+        }
+    }
+
+    private fun getDashboardItemsList() {
+        showProgressDialog(getString(R.string.please_wait))
+        FirestoreClass().getDashboardItems(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getDashboardItemsList()
     }
 }

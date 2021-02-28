@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.model.User
 import com.example.myshoppal.ui.*
+import com.example.myshoppal.ui.main.DashboardFragment
 import com.example.myshoppal.ui.main.ProductsFragment
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
@@ -163,6 +164,39 @@ class FirestoreClass {
                 when (fragment) {
                     is ProductsFragment -> {
                         fragment.successProductsListFromFirestore(productList)
+                    }
+                }
+            }.addOnFailureListener {
+                when (fragment) {
+                    is ProductsFragment -> {
+                        fragment.hideProgressDialog()
+                        Log.e(fragment.javaClass.simpleName, "Error while loading products list.", it)
+                    }
+                }
+            }
+    }
+
+    fun getDashboardItems(fragment: Fragment) {
+        mFirestore.collection(PRODUCTS)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val products = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(Product::class.java).also {
+                        it?.product_id = documentSnapshot.id
+                    }
+                }
+
+                when (fragment) {
+                    is DashboardFragment -> {
+                        fragment.successDashboardItemsList(products)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                when (fragment) {
+                    is DashboardFragment -> {
+                        fragment.hideProgressDialog()
+                        Log.e(fragment.javaClass.simpleName, "Error while loading dashboard items.", it)
                     }
                 }
             }
