@@ -58,7 +58,7 @@ class UserProfileActivity : BaseActivity() {
             } else {
                 setupActionBar()
                 tvTitle.text = getString(R.string.title_edit_profile)
-                GlideLoader(this@UserProfileActivity).loadPicture(user.image, ivUserPhoto)
+                GlideLoader(this@UserProfileActivity).loadPicture(user.image, ivUserPhoto, R.drawable.ic_user_placeholder)
                 if (user.mobile != 0L) {
                     etMobileNumber.setText(user.mobile.toString())
                 }
@@ -157,7 +157,7 @@ class UserProfileActivity : BaseActivity() {
                 try {
                     data.data?.let {
                         selectedImageUri = it
-                        GlideLoader(this).loadPicture(it, binding.ivUserPhoto)
+                        GlideLoader(this).loadPicture(it, binding.ivUserPhoto, R.drawable.ic_user_placeholder)
                     }
                 } catch (e: IOException) {
                     e.printStackTrace()

@@ -29,6 +29,8 @@ object Constants {
 
     const val PRODUCT_IMAGE = "Product_Image"
 
+    const val USER_ID = "user_id"
+
     const val USER_PROFILE_IMAGE_PREFIX = "UserProfileImage"
 
     fun showImageChooser(activity: Activity) {

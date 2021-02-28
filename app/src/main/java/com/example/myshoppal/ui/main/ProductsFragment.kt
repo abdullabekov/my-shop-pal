@@ -5,10 +5,18 @@ import android.os.Bundle
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myshoppal.R
+import com.example.myshoppal.databinding.FragmentProductsBinding
+import com.example.myshoppal.firestore.FirestoreClass
+import com.example.myshoppal.model.Product
 import com.example.myshoppal.ui.AddProductActivity
+import com.example.myshoppal.ui.adapters.MyProductsListAdapter
 
-class ProductsFragment : Fragment() {
+class ProductsFragment : BaseFragment() {
+    private var _binding: FragmentProductsBinding? = null
+    private val binding
+        get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +30,7 @@ class ProductsFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_add_product -> {
                 startActivity(Intent(context, AddProductActivity::class.java))
                 return true
@@ -36,12 +44,40 @@ class ProductsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_products, container, false)
-        val textView: TextView = root.findViewById(R.id.text_home)
-//        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-//            textView.text = it
-//        })
-        textView.text = "This is home fragment"
-        return root
+        _binding = FragmentProductsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
+    fun successProductsListFromFirestore(products: List<Product>) {
+        hideProgressDialog()
+        val hasProducts = products.isNotEmpty()
+
+        if(hasProducts) {
+            binding.tvNoProductsFound.visibility = View.GONE
+            with(binding.rvMyProductItems) {
+                visibility = View.VISIBLE
+                layoutManager = LinearLayoutManager(context)
+                setHasFixedSize(true)
+                adapter = MyProductsListAdapter(context, products)
+            }
+        } else {
+            binding.rvMyProductItems.visibility = View.GONE
+            binding.tvNoProductsFound.visibility = View.VISIBLE
+        }
+    }
+
+    private fun getProductsListFromFirestore() {
+        showProgressDialog(getString(R.string.please_wait))
+        FirestoreClass().getProductsList(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getProductsListFromFirestore()
     }
 }

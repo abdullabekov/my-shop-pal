@@ -4,13 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.fragment.app.Fragment
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.model.User
 import com.example.myshoppal.ui.*
+import com.example.myshoppal.ui.main.ProductsFragment
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.PRODUCTS
 import com.example.myshoppal.utils.Constants.USERS
+import com.example.myshoppal.utils.Constants.USER_ID
 import com.example.myshoppal.utils.Constants.USER_PROFILE_IMAGE_PREFIX
 import com.example.myshoppal.utils.Constants.getFileExtension
 import com.google.firebase.auth.FirebaseAuth
@@ -142,6 +145,26 @@ class FirestoreClass {
                     activity.javaClass.simpleName, "Error while uploading the product details",
                     e
                 )
+            }
+    }
+
+    fun getProductsList(fragment: Fragment) {
+        mFirestore.collection(PRODUCTS)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                Log.e("ProductsList", querySnapshot.documents.toString())
+                val productList = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(Product::class.java).also {
+                        it?.product_id = documentSnapshot.id
+                    }
+                }
+
+                when (fragment) {
+                    is ProductsFragment -> {
+                        fragment.successProductsListFromFirestore(productList)
+                    }
+                }
             }
     }
 }

@@ -2,6 +2,7 @@ package com.example.myshoppal.ui
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivitySettingsBinding
 import com.example.myshoppal.firestore.FirestoreClass
@@ -55,7 +56,7 @@ class SettingsActivity : BaseActivity() {
 
         this.user = user
 
-        GlideLoader(this).loadPicture(user.image, binding.ivUserPhoto)
+        GlideLoader(this).loadPicture(user.image, binding.ivUserPhoto, R.drawable.ic_user_placeholder)
 
         with (binding) {
             tvName.text = "${user.firstName} ${user.lastName}"

@@ -36,10 +36,6 @@ open class BaseActivity() : AppCompatActivity() {
         }
     }
 
-    protected fun hideStatusBar() {
-
-    }
-
     fun showSnackBar(message: String, isErrorMessage: Boolean) {
         val snackBar =
             Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
