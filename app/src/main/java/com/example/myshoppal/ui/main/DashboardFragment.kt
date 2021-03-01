@@ -65,13 +65,14 @@ class DashboardFragment : BaseFragment() {
                 setHasFixedSize(true)
                 val dashboardAdapter = DashboardItemsListAdapter(items)
                 adapter = dashboardAdapter
-                dashboardAdapter.setOnClickListener(object : DashboardItemsListAdapter.OnClickListener {
-                    override fun onClick(position: Int, product: Product) {
-                        val intent = Intent(context, ProductDetailsActivity::class.java)
-                        intent.putExtra(Constants.EXTRA_PRODUCT_ID, product.product_id)
-                        startActivity(intent)
-                    }
-                })
+//                dashboardAdapter.setOnClickListener(object : DashboardItemsListAdapter.OnClickListener {
+//                    override fun onClick(position: Int, product: Product) {
+//                        val intent = Intent(context, ProductDetailsActivity::class.java)
+//                        intent.putExtra(Constants.EXTRA_PRODUCT_ID, product.product_id)
+//                intent.putExtra(Constants.EXTRA_PRODUCT_OWNER_ID, item.user_id)
+//                        startActivity(intent)
+//                    }
+//                })
 
             }
         } else {

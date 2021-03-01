@@ -2,16 +2,22 @@ package com.example.myshoppal.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityProductDetailsBinding
 import com.example.myshoppal.firestore.FirestoreClass
+import com.example.myshoppal.model.CartItem
 import com.example.myshoppal.model.Product
+import com.example.myshoppal.utils.Constants.DEFAULT_CART_QUANTITY
 import com.example.myshoppal.utils.Constants.EXTRA_PRODUCT_ID
+import com.example.myshoppal.utils.Constants.EXTRA_PRODUCT_OWNER_ID
 import com.example.myshoppal.utils.GlideLoader
 
 class ProductDetailsActivity : BaseActivity() {
     private lateinit var binding: ActivityProductDetailsBinding
     private var productId: String = ""
+    private lateinit var product: Product
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +27,18 @@ class ProductDetailsActivity : BaseActivity() {
         setupActionBar()
 
         productId = intent.getStringExtra(EXTRA_PRODUCT_ID) ?: ""
+        var productOwnerId = intent.getStringExtra(EXTRA_PRODUCT_OWNER_ID) ?: ""
+        if (FirestoreClass().getCurrentUserID() == productOwnerId) {
+            binding.btnAddToCart.visibility = View.GONE
+            binding.btnGoToCart.visibility = View.GONE
+        } else {
+            binding.btnAddToCart.visibility = View.VISIBLE
+            binding.btnGoToCart.visibility = View.VISIBLE
+        }
+
+        binding.btnAddToCart.setOnClickListener {
+            addToCart()
+        }
 
         getProductDetails()
     }
@@ -42,6 +60,7 @@ class ProductDetailsActivity : BaseActivity() {
     }
 
     fun productDetailsSuccess(product: Product) {
+        this.product = product
         hideProgressDialog()
         GlideLoader(this).loadPicture(product.image, binding.ivProductDetailImage)
         with(binding) {
@@ -50,5 +69,39 @@ class ProductDetailsActivity : BaseActivity() {
             tvProductDetailsPrice.text = "$${product.price}"
             tvProductDetailsAvailableQuantity.text = product.stock_quantity
         }
+        if (FirestoreClass().getCurrentUserID() == product.user_id) {
+            hideProgressDialog()
+        } else {
+            FirestoreClass().checkIfItemExistInCart(this, productId)
+        }
+    }
+
+    private fun addToCart() {
+        val cart = CartItem(
+            user_id = FirestoreClass().getCurrentUserID(),
+            product_id = productId,
+            title = product.title,
+            price = product.price,
+            image = product.image,
+            cart_quantity = DEFAULT_CART_QUANTITY
+        )
+        showProgressDialog(getString(R.string.please_wait))
+        FirestoreClass().addCartItems(this, cart)
+    }
+
+    fun addToCartSuccess() {
+        hideProgressDialog()
+        Toast.makeText(
+            this, getString(R.string.add_item_to_cart_success),
+            Toast.LENGTH_LONG
+        ).show()
+        binding.btnAddToCart.visibility = View.GONE
+        binding.btnGoToCart.visibility = View.VISIBLE
+    }
+
+    fun productExistsInCart() {
+        hideProgressDialog()
+        binding.btnAddToCart.visibility = View.GONE
+        binding.btnGoToCart.visibility = View.VISIBLE
     }
 }

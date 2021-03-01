@@ -5,14 +5,17 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.Fragment
+import com.example.myshoppal.model.CartItem
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.model.User
 import com.example.myshoppal.ui.*
 import com.example.myshoppal.ui.main.DashboardFragment
 import com.example.myshoppal.ui.main.ProductsFragment
+import com.example.myshoppal.utils.Constants.CART_ITEMS
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.PRODUCTS
+import com.example.myshoppal.utils.Constants.PRODUCT_ID
 import com.example.myshoppal.utils.Constants.USERS
 import com.example.myshoppal.utils.Constants.USER_ID
 import com.example.myshoppal.utils.Constants.USER_PROFILE_IMAGE_PREFIX
@@ -231,6 +234,33 @@ class FirestoreClass {
                 documentSnapshot.toObject(Product::class.java)?.let {
                     activity.productDetailsSuccess(it)
                 }
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading product details.", e)
+            }
+    }
+
+    fun addCartItems(activity: ProductDetailsActivity, cart: CartItem) {
+        mFirestore.collection(CART_ITEMS)
+            .document()
+            .set(cart, SetOptions.merge())
+            .addOnSuccessListener {
+                activity.addToCartSuccess()
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading product details.", e)
+            }
+    }
+
+    fun checkIfItemExistInCart(activity: ProductDetailsActivity, productId: String) {
+        mFirestore.collection(CART_ITEMS)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .whereEqualTo(PRODUCT_ID, productId)
+            .get()
+            .addOnSuccessListener {
+                if (it.documents.isNotEmpty()) activity.productExistsInCart() else activity.hideProgressDialog()
             }
             .addOnFailureListener { e ->
                 activity.hideProgressDialog()
