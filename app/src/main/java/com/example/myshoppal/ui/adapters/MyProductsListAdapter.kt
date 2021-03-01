@@ -1,12 +1,15 @@
 package com.example.myshoppal.ui.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myshoppal.databinding.ItemListLayoutBinding
 import com.example.myshoppal.model.Product
+import com.example.myshoppal.ui.ProductDetailsActivity
 import com.example.myshoppal.ui.main.ProductsFragment
+import com.example.myshoppal.utils.Constants.EXTRA_PRODUCT_ID
 import com.example.myshoppal.utils.GlideLoader
 
 open class MyProductsListAdapter(
@@ -20,13 +23,19 @@ open class MyProductsListAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = products[position]
-        with((holder as MyViewHolder).binding) {
+        val myHolder = (holder as MyViewHolder)
+        with(myHolder.binding) {
             GlideLoader(holder.itemView.context).loadPicture(model.image, ivItemImage)
             tvItemName.text = model.title
             tvItemPrice.text = "$${model.price}"
             ibDeleteProduct.setOnClickListener {
                 fragment.deleteProduct(model.product_id)
             }
+        }
+        myHolder.itemView.setOnClickListener {
+            val intent = Intent(holder.itemView.context, ProductDetailsActivity::class.java)
+            intent.putExtra(EXTRA_PRODUCT_ID, model.product_id)
+            holder.itemView.context.startActivity(intent)
         }
     }
 

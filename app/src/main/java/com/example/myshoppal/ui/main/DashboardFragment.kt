@@ -11,8 +11,10 @@ import com.example.myshoppal.R
 import com.example.myshoppal.databinding.FragmentDashboardBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Product
+import com.example.myshoppal.ui.ProductDetailsActivity
 import com.example.myshoppal.ui.SettingsActivity
 import com.example.myshoppal.ui.adapters.DashboardItemsListAdapter
+import com.example.myshoppal.utils.Constants
 
 class DashboardFragment : BaseFragment() {
     private var _binding: FragmentDashboardBinding? = null
@@ -61,7 +63,16 @@ class DashboardFragment : BaseFragment() {
             with(binding.rvDashboardItems) {
                 layoutManager = GridLayoutManager(requireContext(), 2)
                 setHasFixedSize(true)
-                adapter = DashboardItemsListAdapter(items)
+                val dashboardAdapter = DashboardItemsListAdapter(items)
+                adapter = dashboardAdapter
+                dashboardAdapter.setOnClickListener(object : DashboardItemsListAdapter.OnClickListener {
+                    override fun onClick(position: Int, product: Product) {
+                        val intent = Intent(context, ProductDetailsActivity::class.java)
+                        intent.putExtra(Constants.EXTRA_PRODUCT_ID, product.product_id)
+                        startActivity(intent)
+                    }
+                })
+
             }
         } else {
             binding.rvDashboardItems.visibility = View.GONE

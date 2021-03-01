@@ -33,6 +33,8 @@ object Constants {
 
     const val USER_PROFILE_IMAGE_PREFIX = "UserProfileImage"
 
+    const val EXTRA_PRODUCT_ID = "extra_product_id"
+
     fun showImageChooser(activity: Activity) {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activity.startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)

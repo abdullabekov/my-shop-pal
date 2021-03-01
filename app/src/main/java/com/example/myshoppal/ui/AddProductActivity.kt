@@ -66,7 +66,6 @@ class AddProductActivity : BaseActivity() {
         binding.toolbarAddProductActivity.setNavigationOnClickListener { onBackPressed() }
     }
 
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

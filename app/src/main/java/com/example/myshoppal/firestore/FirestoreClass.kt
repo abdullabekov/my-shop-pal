@@ -170,7 +170,11 @@ class FirestoreClass {
                 when (fragment) {
                     is ProductsFragment -> {
                         fragment.hideProgressDialog()
-                        Log.e(fragment.javaClass.simpleName, "Error while loading products list.", it)
+                        Log.e(
+                            fragment.javaClass.simpleName,
+                            "Error while loading products list.",
+                            it
+                        )
                     }
                 }
             }
@@ -196,7 +200,11 @@ class FirestoreClass {
                 when (fragment) {
                     is DashboardFragment -> {
                         fragment.hideProgressDialog()
-                        Log.e(fragment.javaClass.simpleName, "Error while loading dashboard items.", it)
+                        Log.e(
+                            fragment.javaClass.simpleName,
+                            "Error while loading dashboard items.",
+                            it
+                        )
                     }
                 }
             }
@@ -212,6 +220,21 @@ class FirestoreClass {
             .addOnFailureListener { e ->
                 fragment.hideProgressDialog()
                 Log.e(fragment.javaClass.simpleName, "Error while deleting the product.", e)
+            }
+    }
+
+    fun getProductDetails(activity: ProductDetailsActivity, productId: String) {
+        mFirestore.collection(PRODUCTS)
+            .document(productId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                documentSnapshot.toObject(Product::class.java)?.let {
+                    activity.productDetailsSuccess(it)
+                }
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading product details.", e)
             }
     }
 }

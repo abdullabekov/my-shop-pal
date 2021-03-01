@@ -10,6 +10,12 @@ import com.example.myshoppal.utils.GlideLoader
 class DashboardItemsListAdapter(
     private var dashboardItems: List<Product>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private var onClickListener: OnClickListener? = null
+
+    fun setOnClickListener(onClickListener: OnClickListener) {
+        this.onClickListener = onClickListener
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return MyViewHolder(
             ItemDashboardLayoutBinding.inflate(
@@ -27,11 +33,17 @@ class DashboardItemsListAdapter(
             tvDashboardItemTitle.text = item.title
             tvDashboardItemPrice.text = "$${item.price}"
         }
+        holder.itemView.setOnClickListener { onClickListener?.onClick(position, item) }
     }
 
     override fun getItemCount(): Int {
         return dashboardItems.size
     }
 
-    class MyViewHolder(val binding: ItemDashboardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
+    class MyViewHolder(val binding: ItemDashboardLayoutBinding) :
+        RecyclerView.ViewHolder(binding.root)
+
+    interface OnClickListener {
+        fun onClick(position: Int, product: Product)
+    }
 }
