@@ -267,4 +267,83 @@ class FirestoreClass {
                 Log.e(activity.javaClass.simpleName, "Error while loading product details.", e)
             }
     }
+
+    fun getCartList(activity: CartListActivity) {
+        mFirestore.collection(CART_ITEMS)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val cartItems = querySnapshot
+                    .documents.mapNotNull { documentSnapshot ->
+                        documentSnapshot.toObject(CartItem::class.java)
+                            ?.also { it.id = documentSnapshot.id }
+                    }
+                activity.successCartItemsList(cartItems)
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading cart items.", e)
+            }
+    }
+
+    fun getAllProductsList(activity: CartListActivity) {
+        activity.hideProgressDialog()
+        mFirestore.collection(PRODUCTS)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val products = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(Product::class.java)?.also {
+                        it.product_id = documentSnapshot.id
+                    }
+                }
+                activity.successProductsList(products)
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading cart items.", e)
+            }
+    }
+
+    fun removeItemFromCart(context: Context, cart_id: String) {
+        mFirestore.collection(CART_ITEMS)
+            .document(cart_id)
+            .delete()
+            .addOnSuccessListener {
+                when (context) {
+                    is CartListActivity -> {
+                        context.itemRemovedSuccess()
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                when (context) {
+                    is CartListActivity -> {
+                        context.hideProgressDialog()
+                    }
+                }
+                Log.e(context.javaClass.simpleName, "Error while loading cart items.", e)
+            }
+    }
+
+    fun updateCart(context: Context, cart_id: String, itemHashMap: HashMap<String, Any>) {
+        mFirestore.collection(CART_ITEMS)
+            .document(cart_id)
+            .update(itemHashMap)
+            .addOnSuccessListener {
+                when (context) {
+                    is CartListActivity -> {
+                        context.cartItemUpdateSuccess()
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                when (context) {
+                    is CartListActivity -> {
+                        context.hideProgressDialog()
+                    }
+                }
+                Log.e(context.javaClass.simpleName, "Error while updating cart.", e)
+
+            }
+    }
 }

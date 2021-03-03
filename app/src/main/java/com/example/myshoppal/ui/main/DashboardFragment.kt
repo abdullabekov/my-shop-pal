@@ -11,6 +11,7 @@ import com.example.myshoppal.R
 import com.example.myshoppal.databinding.FragmentDashboardBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Product
+import com.example.myshoppal.ui.CartListActivity
 import com.example.myshoppal.ui.ProductDetailsActivity
 import com.example.myshoppal.ui.SettingsActivity
 import com.example.myshoppal.ui.adapters.DashboardItemsListAdapter
@@ -50,6 +51,9 @@ class DashboardFragment : BaseFragment() {
             R.id.action_settings -> {
                 startActivity(Intent(activity, SettingsActivity::class.java))
                 return true
+            }
+            R.id.action_cart -> {
+                startActivity(Intent(context, CartListActivity::class.java))
             }
         }
         return super.onOptionsItemSelected(item)

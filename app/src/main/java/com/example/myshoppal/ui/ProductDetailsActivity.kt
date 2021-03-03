@@ -1,9 +1,11 @@
 package com.example.myshoppal.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ActivityProductDetailsBinding
 import com.example.myshoppal.firestore.FirestoreClass
@@ -40,6 +42,10 @@ class ProductDetailsActivity : BaseActivity() {
             addToCart()
         }
 
+        binding.btnGoToCart.setOnClickListener {
+            startActivity(Intent(this, CartListActivity::class.java))
+        }
+
         getProductDetails()
     }
 
@@ -68,11 +74,21 @@ class ProductDetailsActivity : BaseActivity() {
             tvProductDetailsDescription.text = product.description
             tvProductDetailsPrice.text = "$${product.price}"
             tvProductDetailsAvailableQuantity.text = product.stock_quantity
-        }
-        if (FirestoreClass().getCurrentUserID() == product.user_id) {
-            hideProgressDialog()
-        } else {
-            FirestoreClass().checkIfItemExistInCart(this, productId)
+            if (product.stock_quantity == "0") {
+                hideProgressDialog()
+                btnAddToCart.visibility = View.GONE
+                tvProductDetailsAvailableQuantity.text = getString(R.string.out_of_stock)
+                tvProductDetailsAvailableQuantity.setTextColor(
+                    ContextCompat.getColor(this@ProductDetailsActivity, R.color.snackBarError)
+                )
+            } else {
+                btnAddToCart.visibility = View.VISIBLE
+                if (FirestoreClass().getCurrentUserID() == product.user_id) {
+                    hideProgressDialog()
+                } else {
+                    FirestoreClass().checkIfItemExistInCart(this@ProductDetailsActivity, productId)
+                }
+            }
         }
     }
 
