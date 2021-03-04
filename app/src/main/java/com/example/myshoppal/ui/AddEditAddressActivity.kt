@@ -11,6 +11,9 @@ import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.utils.Constants
 import com.example.myshoppal.utils.Constants.EXTRA_ADDRESS_DETAILS
+import com.example.myshoppal.utils.Constants.HOME
+import com.example.myshoppal.utils.Constants.OFFICE
+import com.example.myshoppal.utils.Constants.OTHER
 
 class AddEditAddressActivity : BaseActivity() {
     private lateinit var binding: ActivityAddEditAddressBinding
@@ -22,14 +25,37 @@ class AddEditAddressActivity : BaseActivity() {
         setContentView(binding.root)
 
         mAddress = intent.getParcelableExtra(EXTRA_ADDRESS_DETAILS)
+        mAddress?.let {
+            if (it.id.isNotEmpty()) {
+                with(binding) {
+                    tvTitle.text = getString(R.string.title_edit_address)
+                    btnSubmitAddress.text = getString(R.string.btn_lbl_update)
+                    etFullName.setText(it.name)
+                    etPhoneNumber.setText(it.mobileNumber)
+                    etAddress.setText(it.address)
+                    etZipCode.setText(it.zipCode)
+                    etAdditionalNote.setText(it.additionalNote)
+
+                    when (it.type) {
+                        HOME -> rbHome.isChecked = true
+                        OFFICE -> rbOffice.isChecked = true
+                        OTHER -> {
+                            tilOtherDetails.visibility = View.VISIBLE
+                            etOtherDetails.setText(it.otherDetails)
+                            rbOther.isChecked = true
+                        }
+                    }
+                }
+            }
+        }
 
         setupActionBar()
 
         binding.btnSubmitAddress.setOnClickListener {
             saveAddressToFirestore()
         }
-        binding.rgType.setOnCheckedChangeListener{ _, checkedId ->
-            if(checkedId == R.id.rb_other) {
+        binding.rgType.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.rb_other) {
                 binding.tilOtherDetails.visibility = View.VISIBLE
             } else {
                 binding.tilOtherDetails.visibility = View.GONE
@@ -125,13 +151,27 @@ class AddEditAddressActivity : BaseActivity() {
                 otherDetails
             )
 
-            FirestoreClass().addAddress(this, addressModel)
+            if (mAddress != null && mAddress?.id?.isNotEmpty() == true) {
+                FirestoreClass().updateAddress(activity = this, addressModel, mAddress!!.id)
+            } else {
+                FirestoreClass().addAddress(this, addressModel)
+            }
         }
     }
 
     fun addUpdateAddressSuccess() {
         hideProgressDialog()
-        Toast.makeText(this, getString(R.string.address_was_added_successfully_message), Toast.LENGTH_LONG).show()
+        val message =
+            if (mAddress != null && mAddress!!.id.isNotEmpty()) {
+                getString(R.string.address_was_updated_successfully)
+            } else {
+                getString(R.string.address_was_added_successfully_message)
+            }
+        Toast.makeText(
+            this,
+            getString(R.string.address_was_added_successfully_message),
+            Toast.LENGTH_LONG
+        ).show()
         finish()
     }
 }

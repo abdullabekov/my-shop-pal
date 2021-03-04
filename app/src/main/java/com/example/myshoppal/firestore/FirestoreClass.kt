@@ -373,9 +373,23 @@ class FirestoreClass {
                 }
                 activity.successAddressFromFirestore(addresses)
             }
-            .addOnFailureListener {e ->
+            .addOnFailureListener { e ->
                 activity.hideProgressDialog()
                 Log.e(activity.javaClass.simpleName, "Error while getting addresses.", e)
+            }
+    }
+
+    fun updateAddress(activity: AddEditAddressActivity, address: Address, addressId: String) {
+        mFirestore.collection(ADDRESSES)
+            .document(addressId)
+            .set(address, SetOptions.merge())
+            .addOnSuccessListener {
+                activity.addUpdateAddressSuccess()
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while updating address.", e)
+
             }
     }
 }
