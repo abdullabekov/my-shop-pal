@@ -33,6 +33,11 @@ class SettingsActivity : BaseActivity() {
             intent.putExtra(EXTRA_USER_DETAILS, user)
             startActivity(intent)
         }
+
+        binding.llAddress.setOnClickListener {
+            val intent = Intent(this, AddressListActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun setupActionBar() {

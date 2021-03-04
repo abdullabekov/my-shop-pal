@@ -5,12 +5,14 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.Fragment
+import com.example.myshoppal.model.Address
 import com.example.myshoppal.model.CartItem
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.model.User
 import com.example.myshoppal.ui.*
 import com.example.myshoppal.ui.main.DashboardFragment
 import com.example.myshoppal.ui.main.ProductsFragment
+import com.example.myshoppal.utils.Constants.ADDRESSES
 import com.example.myshoppal.utils.Constants.CART_ITEMS
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
@@ -343,7 +345,37 @@ class FirestoreClass {
                     }
                 }
                 Log.e(context.javaClass.simpleName, "Error while updating cart.", e)
+            }
+    }
 
+    fun addAddress(activity: AddEditAddressActivity, address: Address) {
+        mFirestore.collection(ADDRESSES)
+            .document()
+            .set(address, SetOptions.merge())
+            .addOnSuccessListener {
+                activity.addUpdateAddressSuccess()
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while adding address.", e)
+            }
+    }
+
+    fun getAddresses(activity: AddressListActivity) {
+        mFirestore.collection(ADDRESSES)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val addresses = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(Address::class.java).also {
+                        it?.id = documentSnapshot.id
+                    }
+                }
+                activity.successAddressFromFirestore(addresses)
+            }
+            .addOnFailureListener {e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while getting addresses.", e)
             }
     }
 }
