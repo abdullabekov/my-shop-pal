@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myshoppal.R
@@ -11,6 +12,7 @@ import com.example.myshoppal.databinding.ActivityAddressListBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.ui.adapters.AddressListAdapter
+import com.example.myshoppal.utils.SwipeToEditCallback
 
 class AddressListActivity : BaseActivity() {
     private lateinit var binding: ActivityAddressListBinding
@@ -45,13 +47,26 @@ class AddressListActivity : BaseActivity() {
 
     fun successAddressFromFirestore(addresses: List<Address>) {
         hideProgressDialog()
-        if(addresses.isNotEmpty()) {
+        if (addresses.isNotEmpty()) {
             binding.rvAddressList.visibility = View.VISIBLE
             binding.tvNoAddressFound.visibility = View.GONE
             with(binding.rvAddressList) {
                 layoutManager = LinearLayoutManager(this@AddressListActivity)
                 setHasFixedSize(true)
                 adapter = AddressListAdapter(addresses)
+
+                val editSwipeHandler = object : SwipeToEditCallback(this@AddressListActivity) {
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        val adapter = adapter as AddressListAdapter
+                        adapter.notifyEditItem(
+                            this@AddressListActivity,
+                            position = viewHolder.adapterPosition
+                        )
+                    }
+                }
+
+                val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
+                editItemTouchHelper.attachToRecyclerView(binding.rvAddressList)
             }
         } else {
             binding.rvAddressList.visibility = View.GONE

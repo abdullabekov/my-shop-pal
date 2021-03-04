@@ -10,14 +10,18 @@ import com.example.myshoppal.databinding.ActivityAddEditAddressBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.utils.Constants
+import com.example.myshoppal.utils.Constants.EXTRA_ADDRESS_DETAILS
 
 class AddEditAddressActivity : BaseActivity() {
     private lateinit var binding: ActivityAddEditAddressBinding
+    private var mAddress: Address? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddEditAddressBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        mAddress = intent.getParcelableExtra(EXTRA_ADDRESS_DETAILS)
 
         setupActionBar()
 

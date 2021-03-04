@@ -1,17 +1,20 @@
 package com.example.myshoppal.ui.adapters
 
+import android.app.Activity
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.load.resource.file.FileResource
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.ItemCartLayoutBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.CartItem
+import com.example.myshoppal.ui.AddEditAddressActivity
 import com.example.myshoppal.ui.CartListActivity
 import com.example.myshoppal.utils.Constants.CART_QUANTITY
+import com.example.myshoppal.utils.Constants.EXTRA_ADDRESS_DETAILS
 import com.example.myshoppal.utils.GlideLoader
 
 class CartItemsListAdapter(private val items: List<CartItem>) :

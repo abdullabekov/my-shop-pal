@@ -49,6 +49,8 @@ object Constants {
 
     const val ADDRESSES = "addresses"
 
+    const val EXTRA_ADDRESS_DETAILS = "AddressDetails"
+
     fun showImageChooser(activity: Activity) {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activity.startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
