@@ -5,10 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.Fragment
-import com.example.myshoppal.model.Address
-import com.example.myshoppal.model.CartItem
-import com.example.myshoppal.model.Product
-import com.example.myshoppal.model.User
+import com.example.myshoppal.model.*
 import com.example.myshoppal.ui.*
 import com.example.myshoppal.ui.main.DashboardFragment
 import com.example.myshoppal.ui.main.ProductsFragment
@@ -16,6 +13,7 @@ import com.example.myshoppal.utils.Constants.ADDRESSES
 import com.example.myshoppal.utils.Constants.CART_ITEMS
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
 import com.example.myshoppal.utils.Constants.MY_PREFS
+import com.example.myshoppal.utils.Constants.ORDERS
 import com.example.myshoppal.utils.Constants.PRODUCTS
 import com.example.myshoppal.utils.Constants.PRODUCT_ID
 import com.example.myshoppal.utils.Constants.USERS
@@ -270,39 +268,46 @@ class FirestoreClass {
             }
     }
 
-    fun getCartList(activity: CartListActivity) {
-        mFirestore.collection(CART_ITEMS)
-            .whereEqualTo(USER_ID, getCurrentUserID())
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val cartItems = querySnapshot
-                    .documents.mapNotNull { documentSnapshot ->
-                        documentSnapshot.toObject(CartItem::class.java)
-                            ?.also { it.id = documentSnapshot.id }
-                    }
-                activity.successCartItemsList(cartItems)
-            }
-            .addOnFailureListener { e ->
-                activity.hideProgressDialog()
-                Log.e(activity.javaClass.simpleName, "Error while loading cart items.", e)
-            }
-    }
-
-    fun getAllProductsList(activity: CartListActivity) {
-        activity.hideProgressDialog()
+    fun getCartList(activity: Activity) {
         mFirestore.collection(PRODUCTS)
             .get()
-            .addOnSuccessListener { querySnapshot ->
-                val products = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            .addOnSuccessListener { allProductsQuerySnapshot ->
+                val products = allProductsQuerySnapshot.documents.mapNotNull { documentSnapshot ->
                     documentSnapshot.toObject(Product::class.java)?.also {
                         it.product_id = documentSnapshot.id
                     }
                 }
-                activity.successProductsList(products)
+
+                mFirestore.collection(CART_ITEMS)
+                    .whereEqualTo(USER_ID, getCurrentUserID())
+                    .get()
+                    .addOnSuccessListener { cartItemsQuerySnapshot ->
+                        val cartItems = cartItemsQuerySnapshot
+                            .documents.mapNotNull { documentSnapshot ->
+                                documentSnapshot.toObject(CartItem::class.java)
+                                    ?.also { cartItem ->
+                                        cartItem.id = documentSnapshot.id
+                                        cartItem.stock_quantity =
+                                            products.firstOrNull { it.product_id == cartItem.product_id }?.stock_quantity
+                                                ?: "0"
+                                        if (cartItem.stock_quantity == "0") cartItem.cart_quantity =
+                                            "0"
+                                    }
+                            }
+                        when (activity) {
+                            is CartListActivity -> activity.successCartItemsList(cartItems)
+                            is CheckoutActivity -> activity.getProductSuccess(cartItems)
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        (activity as? BaseActivity)?.hideProgressDialog()
+                        Log.e(activity.javaClass.simpleName, "Error while loading cart items.", e)
+                    }
+
             }
             .addOnFailureListener { e ->
-                activity.hideProgressDialog()
-                Log.e(activity.javaClass.simpleName, "Error while loading cart items.", e)
+                (activity as? BaseActivity)?.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while loading all products.", e)
             }
     }
 
@@ -333,9 +338,8 @@ class FirestoreClass {
             .update(itemHashMap)
             .addOnSuccessListener {
                 when (context) {
-                    is CartListActivity -> {
-                        context.cartItemUpdateSuccess()
-                    }
+                    is CartListActivity -> getCartList(context)
+                    is CheckoutActivity -> getCartList(context)
                 }
             }
             .addOnFailureListener { e ->
@@ -402,7 +406,19 @@ class FirestoreClass {
             .addOnFailureListener { e ->
                 activity.hideProgressDialog()
                 Log.e(activity.javaClass.simpleName, "Error while deleting address.", e)
+            }
+    }
 
+    fun placeOrder(activity: CheckoutActivity, order: Order) {
+        mFirestore.collection(ORDERS)
+            .document()
+            .set(order, SetOptions.merge())
+            .addOnSuccessListener {
+                activity.orderPlaceSuccess()
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while placing order.", e)
             }
     }
 }

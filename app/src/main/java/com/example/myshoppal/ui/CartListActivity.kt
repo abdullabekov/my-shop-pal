@@ -1,5 +1,6 @@
 package com.example.myshoppal.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,10 +10,10 @@ import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.CartItem
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.ui.adapters.CartItemsListAdapter
+import com.example.myshoppal.utils.Constants.EXTRA_SELECT_ADDRESS
 
 class CartListActivity : BaseActivity() {
     private lateinit var binding: ActivityCartListBinding
-    private lateinit var products: List<Product>
     private lateinit var cartItems: List<CartItem>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,6 +22,12 @@ class CartListActivity : BaseActivity() {
         setContentView(binding.root)
 
         setupActionBar()
+
+        binding.btnCheckout.setOnClickListener {
+            val intent = Intent(this, AddressListActivity::class.java)
+            intent.putExtra(EXTRA_SELECT_ADDRESS, true)
+            startActivity(intent)
+        }
     }
 
     private fun setupActionBar() {
@@ -36,38 +43,24 @@ class CartListActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-//        getCartItems()
-        getProductsList()
-    }
-
-    private fun getProductsList() {
-        showProgressDialog(getString(R.string.please_wait))
-        FirestoreClass().getAllProductsList(this)
+        getCartItems()
     }
 
     private fun getCartItems() {
+        showProgressDialog(getString(R.string.please_wait))
         FirestoreClass().getCartList(this)
     }
 
     fun successCartItemsList(items: List<CartItem>) {
         hideProgressDialog()
-
-        items.forEach { cartItem ->
-            products.firstOrNull { cartItem.product_id == it.product_id }?.let {
-                cartItem.stock_quantity = it.stock_quantity
-                if (it.stock_quantity == "0") cartItem.cart_quantity = "0"
-            }
-        }
-
         this.cartItems = items
-
         if (cartItems.isNotEmpty()) {
             binding.tvNoCartItemFound.visibility = View.GONE
             binding.rvCartItemsList.apply {
                 visibility = View.VISIBLE
                 setHasFixedSize(true)
                 layoutManager = LinearLayoutManager(this@CartListActivity)
-                adapter = CartItemsListAdapter(cartItems)
+                adapter = CartItemsListAdapter(cartItems, false)
             }
             val subTotal = this.cartItems
                 .filter { it.stock_quantity != "0" }
@@ -89,17 +82,7 @@ class CartListActivity : BaseActivity() {
         }
     }
 
-    fun successProductsList(products: List<Product>) {
-        this.products = products
-        getCartItems()
-    }
-
     fun itemRemovedSuccess() {
-        hideProgressDialog()
-        getCartItems()
-    }
-
-    fun cartItemUpdateSuccess(){
         hideProgressDialog()
         getCartItems()
     }

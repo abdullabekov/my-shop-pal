@@ -8,9 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myshoppal.databinding.ItemAddressLayoutBinding
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.ui.AddEditAddressActivity
+import com.example.myshoppal.ui.CheckoutActivity
 import com.example.myshoppal.utils.Constants
+import com.example.myshoppal.utils.Constants.ADD_ADDRESS_REQUEST_CODE
+import com.example.myshoppal.utils.Constants.EXTRA_SELECTED_ADDRESS
 
-class AddressListAdapter(private val addresses: List<Address>) :
+class AddressListAdapter(private val addresses: List<Address>, private val selectMode: Boolean) :
     RecyclerView.Adapter<AddressListAdapter.MyViewHolder>() {
 
     class MyViewHolder(val binding: ItemAddressLayoutBinding) : RecyclerView.ViewHolder(binding.root)
@@ -28,7 +31,7 @@ class AddressListAdapter(private val addresses: List<Address>) :
     fun notifyEditItem(activity: Activity, position: Int) {
         val intent = Intent(activity, AddEditAddressActivity::class.java)
         intent.putExtra(Constants.EXTRA_ADDRESS_DETAILS, addresses[position])
-        activity.startActivity(intent)
+        activity.startActivityForResult(intent, ADD_ADDRESS_REQUEST_CODE)
         notifyItemChanged(position)
     }
 
@@ -39,6 +42,14 @@ class AddressListAdapter(private val addresses: List<Address>) :
             tvAddressType.text = address.type
             tvAddressDetails.text = "${address.address}, ${address.zipCode}"
             tvAddressMobileNumber.text = address.mobileNumber
+
+            if(selectMode) {
+                holder.itemView.setOnClickListener {
+                    val intent = Intent(holder.itemView.context, CheckoutActivity::class.java)
+                    intent.putExtra(EXTRA_SELECTED_ADDRESS, address)
+                    holder.itemView.context.startActivity(intent)
+                }
+            }
         }
     }
 

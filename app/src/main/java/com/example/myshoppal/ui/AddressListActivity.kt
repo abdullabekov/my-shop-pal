@@ -12,11 +12,15 @@ import com.example.myshoppal.databinding.ActivityAddressListBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.ui.adapters.AddressListAdapter
+import com.example.myshoppal.utils.Constants
+import com.example.myshoppal.utils.Constants.ADD_ADDRESS_REQUEST_CODE
+import com.example.myshoppal.utils.Constants.EXTRA_SELECT_ADDRESS
 import com.example.myshoppal.utils.SwipeToDeleteCallback
 import com.example.myshoppal.utils.SwipeToEditCallback
 
 class AddressListActivity : BaseActivity() {
     private lateinit var binding: ActivityAddressListBinding
+    private var isAddressSelectedMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,13 +30,23 @@ class AddressListActivity : BaseActivity() {
         setupActionBar()
 
         binding.tvAddAddress.setOnClickListener {
-            startActivity(Intent(this, AddEditAddressActivity::class.java))
+            startActivityForResult(
+                Intent(this, AddEditAddressActivity::class.java),
+                ADD_ADDRESS_REQUEST_CODE
+            )
         }
+
+        isAddressSelectedMode = intent.getBooleanExtra(EXTRA_SELECT_ADDRESS, false)
+        if (isAddressSelectedMode) binding.tvTitle.text = getString(R.string.select_address)
+
+        getAddresses()
     }
 
-    override fun onResume() {
-        super.onResume()
-        getAddresses()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == ADD_ADDRESS_REQUEST_CODE && resultCode == RESULT_OK) {
+            getAddresses()
+        }
     }
 
     private fun setupActionBar() {
@@ -54,7 +68,7 @@ class AddressListActivity : BaseActivity() {
             with(binding.rvAddressList) {
                 layoutManager = LinearLayoutManager(this@AddressListActivity)
                 setHasFixedSize(true)
-                adapter = AddressListAdapter(addresses)
+                adapter = AddressListAdapter(addresses, isAddressSelectedMode)
 
                 val editSwipeHandler = object : SwipeToEditCallback(this@AddressListActivity) {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {

@@ -12,12 +12,16 @@ import com.example.myshoppal.databinding.ItemCartLayoutBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.CartItem
 import com.example.myshoppal.ui.AddEditAddressActivity
+import com.example.myshoppal.ui.BaseActivity
 import com.example.myshoppal.ui.CartListActivity
 import com.example.myshoppal.utils.Constants.CART_QUANTITY
 import com.example.myshoppal.utils.Constants.EXTRA_ADDRESS_DETAILS
 import com.example.myshoppal.utils.GlideLoader
 
-class CartItemsListAdapter(private val items: List<CartItem>) :
+class CartItemsListAdapter(
+    private val items: List<CartItem>,
+    private val readMode: Boolean
+) :
     RecyclerView.Adapter<CartItemsListAdapter.MyViewHolder>() {
     class MyViewHolder(val binding: ItemCartLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -34,61 +38,63 @@ class CartItemsListAdapter(private val items: List<CartItem>) :
             GlideLoader(context).loadPicture(item.image, ivCartItemImage)
             tvCartItemTitle.text = item.title
             tvCartItemPrice.text = "$${item.price}"
-            if (item.cart_quantity == "0") {
-                ibRemoveCartItem.visibility = View.GONE
-                ibAddCartItem.visibility = View.GONE
-                tvCartQuantity.text = context.getString(R.string.out_of_stock)
-                tvCartQuantity.setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.snackBarError
+            when {
+                item.cart_quantity == "0" -> {
+                    ibRemoveCartItem.visibility = View.GONE
+                    ibAddCartItem.visibility = View.GONE
+                    tvCartQuantity.text = context.getString(R.string.out_of_stock)
+                    tvCartQuantity.setTextColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.snackBarError
+                        )
                     )
-                )
-            } else {
-                ibRemoveCartItem.visibility = View.VISIBLE
-                ibAddCartItem.visibility = View.VISIBLE
-                tvCartQuantity.text = item.cart_quantity
-            }
-
-            ibDeleteCartItem.setOnClickListener {
-                when (context) {
-                    is CartListActivity -> {
-                        context.showProgressDialog(context.getString(R.string.please_wait))
-                        FirestoreClass().removeItemFromCart(context, item.id)
-                    }
+                }
+                readMode -> {
+                    ibRemoveCartItem.visibility = View.GONE
+                    ibAddCartItem.visibility = View.GONE
+                    ibDeleteCartItem.visibility=View.GONE
+                    tvCartQuantity.text = item.cart_quantity
+                }
+                else -> {
+                    ibDeleteCartItem.visibility = View.VISIBLE
+                    ibRemoveCartItem.visibility = View.VISIBLE
+                    ibAddCartItem.visibility = View.VISIBLE
+                    tvCartQuantity.text = item.cart_quantity
                 }
             }
 
+            ibDeleteCartItem.setOnClickListener {
+                (context as? BaseActivity)?.showProgressDialog(context.getString(R.string.please_wait))
+                FirestoreClass().removeItemFromCart(context, item.id)
+            }
+
             ibRemoveCartItem.setOnClickListener {
-                when (context) {
-                    is CartListActivity -> {
-                        context.showProgressDialog(context.getString(R.string.please_wait))
-                        if (item.cart_quantity == "1") {
-                            FirestoreClass().removeItemFromCart(context, item.id)
-                        } else {
-                            val cartQuantity = item.cart_quantity.toInt()
-                            val itemHashMap = HashMap<String, Any>()
-                            itemHashMap[CART_QUANTITY] = (cartQuantity - 1).toString()
-                            FirestoreClass().updateCart(context, item.id, itemHashMap)
-                        }
-                    }
+                (context as? BaseActivity)?.showProgressDialog(context.getString(R.string.please_wait))
+                if (item.cart_quantity == "1") {
+                    FirestoreClass().removeItemFromCart(context, item.id)
+                } else {
+                    val cartQuantity = item.cart_quantity.toInt()
+                    val itemHashMap = HashMap<String, Any>()
+                    itemHashMap[CART_QUANTITY] = (cartQuantity - 1).toString()
+                    FirestoreClass().updateCart(context, item.id, itemHashMap)
                 }
             }
 
             ibAddCartItem.setOnClickListener {
-                when (context) {
-                    is CartListActivity -> {
-                        val cartQuantity = item.cart_quantity.toInt()
-                        if (cartQuantity < item.stock_quantity.toInt()) {
-                            context.showProgressDialog(context.getString(R.string.please_wait))
-                            val itemHashMap = HashMap<String, Any>()
-                            itemHashMap[CART_QUANTITY] = (cartQuantity + 1).toString()
-                            FirestoreClass().updateCart(context, item.id, itemHashMap)
-                        } else {
-                            context.showSnackBar(context.getString(R.string.out_of_stock_msg,
-                            item.stock_quantity), true)
-                        }
-                    }
+                val cartQuantity = item.cart_quantity.toInt()
+                if (cartQuantity < item.stock_quantity.toInt()) {
+                    (context as? BaseActivity)?.showProgressDialog(context.getString(R.string.please_wait))
+                    val itemHashMap = HashMap<String, Any>()
+                    itemHashMap[CART_QUANTITY] = (cartQuantity + 1).toString()
+                    FirestoreClass().updateCart(context, item.id, itemHashMap)
+                } else {
+                    (context as? BaseActivity)?.showSnackBar(
+                        context.getString(
+                            R.string.out_of_stock_msg,
+                            item.stock_quantity
+                        ), true
+                    )
                 }
             }
         }

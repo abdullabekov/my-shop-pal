@@ -172,6 +172,7 @@ class AddEditAddressActivity : BaseActivity() {
             getString(R.string.address_was_added_successfully_message),
             Toast.LENGTH_LONG
         ).show()
+        setResult(RESULT_OK)
         finish()
     }
 }
