@@ -389,6 +389,19 @@ class FirestoreClass {
             .addOnFailureListener { e ->
                 activity.hideProgressDialog()
                 Log.e(activity.javaClass.simpleName, "Error while updating address.", e)
+            }
+    }
+
+    fun deleteAddress(activity: AddressListActivity, addressId: String) {
+        mFirestore.collection(ADDRESSES)
+            .document(addressId)
+            .delete()
+            .addOnSuccessListener {
+                getAddresses(activity)
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while deleting address.", e)
 
             }
     }

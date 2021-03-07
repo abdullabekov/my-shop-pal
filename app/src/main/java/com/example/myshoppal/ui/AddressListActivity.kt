@@ -12,6 +12,7 @@ import com.example.myshoppal.databinding.ActivityAddressListBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Address
 import com.example.myshoppal.ui.adapters.AddressListAdapter
+import com.example.myshoppal.utils.SwipeToDeleteCallback
 import com.example.myshoppal.utils.SwipeToEditCallback
 
 class AddressListActivity : BaseActivity() {
@@ -67,6 +68,19 @@ class AddressListActivity : BaseActivity() {
 
                 val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
                 editItemTouchHelper.attachToRecyclerView(binding.rvAddressList)
+
+                val deleteSwipeHandler =
+                    object : SwipeToDeleteCallback(context = this@AddressListActivity) {
+                        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                            showProgressDialog(getString(R.string.please_wait))
+                            FirestoreClass().deleteAddress(
+                                this@AddressListActivity,
+                                addresses[viewHolder.adapterPosition].id
+                            )
+                        }
+                    }
+                val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
+                deleteItemTouchHelper.attachToRecyclerView(binding.rvAddressList)
             }
         } else {
             binding.rvAddressList.visibility = View.GONE
