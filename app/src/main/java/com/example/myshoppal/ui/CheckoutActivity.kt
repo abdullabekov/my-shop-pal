@@ -1,7 +1,6 @@
 package com.example.myshoppal.ui
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -21,6 +20,7 @@ class CheckoutActivity : BaseActivity() {
     private var subTotal = 0.0
     private var total = 0.0
     private var cartItems: List<CartItem> = emptyList()
+    var order: Order? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +92,7 @@ class CheckoutActivity : BaseActivity() {
 
     private fun placeAnOrder(){
         showProgressDialog(getString(R.string.please_wait))
-        val order = Order(
+        order = Order(
             FirestoreClass().getCurrentUserID(),
             cartItems,
             address!!,
@@ -102,12 +102,13 @@ class CheckoutActivity : BaseActivity() {
             "10.0", // The Shipping Charge is fixed as $10 for now in our case.
             total.toString(),
             System.currentTimeMillis()
-        )
-        FirestoreClass().placeOrder(this, order)
+        ).also {
+            FirestoreClass().placeOrder(this, it)
+        }
     }
 
     fun orderPlaceSuccess(){
-        FirestoreClass().updateCartDetails(this, cartItems)
+        FirestoreClass().updateAllDetails(this, cartItems, order!!)
     }
 
     fun allDetailUpdatedSuccessfully(){

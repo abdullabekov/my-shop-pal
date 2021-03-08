@@ -10,6 +10,7 @@ import com.example.myshoppal.ui.*
 import com.example.myshoppal.ui.fragments.DashboardFragment
 import com.example.myshoppal.ui.fragments.OrdersFragment
 import com.example.myshoppal.ui.fragments.ProductsFragment
+import com.example.myshoppal.ui.fragments.SoldProductsFragment
 import com.example.myshoppal.utils.Constants.ADDRESSES
 import com.example.myshoppal.utils.Constants.CART_ITEMS
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
@@ -17,6 +18,7 @@ import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.ORDERS
 import com.example.myshoppal.utils.Constants.PRODUCTS
 import com.example.myshoppal.utils.Constants.PRODUCT_ID
+import com.example.myshoppal.utils.Constants.SOLD_PRODUCTS
 import com.example.myshoppal.utils.Constants.STOCK_QUANTITY
 import com.example.myshoppal.utils.Constants.USERS
 import com.example.myshoppal.utils.Constants.USER_ID
@@ -422,9 +424,29 @@ class FirestoreClass {
             }
     }
 
-    fun updateCartDetails(activity: CheckoutActivity, cartList: List<CartItem>) {
+    fun updateAllDetails(activity: CheckoutActivity, cartList: List<CartItem>, order: Order) {
         val batch = mFirestore.batch()
         cartList.forEach {
+
+            val soldProduct = SoldProduct(
+                // Here the user id will be of product owner.
+                it.product_owner_id,
+                it.title,
+                it.price,
+                it.cart_quantity,
+                it.image,
+                order.title,
+                order.order_datetime,
+                order.sub_total_amount,
+                order.shipping_charge,
+                order.total_amount,
+                order.address
+            )
+
+            val documentReference = mFirestore.collection(SOLD_PRODUCTS)
+                .document()
+            batch.set(documentReference, soldProduct)
+
             val productHashMap = HashMap<String, Any>()
             productHashMap[STOCK_QUANTITY] =
                 (it.stock_quantity.toInt() - it.cart_quantity.toInt()).toString()
@@ -452,6 +474,24 @@ class FirestoreClass {
                     documentSnapshot.toObject(Order::class.java)?.also { it.id = documentSnapshot.id }
                 }
                 fragment.ordersGetSuccess(orders)
+            }
+            .addOnFailureListener { e ->
+                fragment.hideProgressDialog()
+                Log.e(fragment.javaClass.simpleName, "Error while getting orders list.", e)
+            }
+    }
+
+    fun getSoldProductsList(fragment: SoldProductsFragment) {
+        mFirestore.collection(SOLD_PRODUCTS)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val soldProducts = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(SoldProduct::class.java)?.also {
+                        it.id = documentSnapshot.id
+                    }
+                }
+                fragment.successGetSoldProductList(soldProducts)
             }
             .addOnFailureListener { e ->
                 fragment.hideProgressDialog()

@@ -59,6 +59,10 @@ object Constants {
 
     const val EXTRA_MY_ORDER_DETAILS = "extra_my_order_details"
 
+    const val SOLD_PRODUCTS: String = "sold_products"
+
+    const val EXTRA_SOLD_PRODUCT_DETAILS = "extra_sold_product_details"
+
     fun showImageChooser(activity: Activity) {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activity.startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
