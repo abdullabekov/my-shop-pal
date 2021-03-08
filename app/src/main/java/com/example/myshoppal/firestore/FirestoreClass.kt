@@ -7,8 +7,9 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import com.example.myshoppal.model.*
 import com.example.myshoppal.ui.*
-import com.example.myshoppal.ui.main.DashboardFragment
-import com.example.myshoppal.ui.main.ProductsFragment
+import com.example.myshoppal.ui.fragments.DashboardFragment
+import com.example.myshoppal.ui.fragments.OrdersFragment
+import com.example.myshoppal.ui.fragments.ProductsFragment
 import com.example.myshoppal.utils.Constants.ADDRESSES
 import com.example.myshoppal.utils.Constants.CART_ITEMS
 import com.example.myshoppal.utils.Constants.LOGGED_IN_USERNAME
@@ -16,14 +17,13 @@ import com.example.myshoppal.utils.Constants.MY_PREFS
 import com.example.myshoppal.utils.Constants.ORDERS
 import com.example.myshoppal.utils.Constants.PRODUCTS
 import com.example.myshoppal.utils.Constants.PRODUCT_ID
+import com.example.myshoppal.utils.Constants.STOCK_QUANTITY
 import com.example.myshoppal.utils.Constants.USERS
 import com.example.myshoppal.utils.Constants.USER_ID
-import com.example.myshoppal.utils.Constants.USER_PROFILE_IMAGE_PREFIX
 import com.example.myshoppal.utils.Constants.getFileExtension
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 
 class FirestoreClass {
@@ -419,6 +419,43 @@ class FirestoreClass {
             .addOnFailureListener { e ->
                 activity.hideProgressDialog()
                 Log.e(activity.javaClass.simpleName, "Error while placing order.", e)
+            }
+    }
+
+    fun updateCartDetails(activity: CheckoutActivity, cartList: List<CartItem>) {
+        val batch = mFirestore.batch()
+        cartList.forEach {
+            val productHashMap = HashMap<String, Any>()
+            productHashMap[STOCK_QUANTITY] =
+                (it.stock_quantity.toInt() - it.cart_quantity.toInt()).toString()
+            val productDocRef = mFirestore.collection(PRODUCTS).document(it.product_id)
+            batch.update(productDocRef, productHashMap)
+            val cartItemDocRef = mFirestore.collection(CART_ITEMS).document(it.id)
+            batch.delete(cartItemDocRef)
+        }
+        batch.commit()
+            .addOnSuccessListener {
+                activity.allDetailUpdatedSuccessfully()
+            }
+            .addOnFailureListener { e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while updating cart details.", e)
+            }
+    }
+
+    fun getMyOrdersList(fragment: OrdersFragment) {
+        mFirestore.collection(ORDERS)
+            .whereEqualTo(USER_ID, getCurrentUserID())
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val orders = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                    documentSnapshot.toObject(Order::class.java)?.also { it.id = documentSnapshot.id }
+                }
+                fragment.ordersGetSuccess(orders)
+            }
+            .addOnFailureListener { e ->
+                fragment.hideProgressDialog()
+                Log.e(fragment.javaClass.simpleName, "Error while getting orders list.", e)
             }
     }
 }

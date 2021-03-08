@@ -1,21 +1,16 @@
-package com.example.myshoppal.ui.main
+package com.example.myshoppal.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.TextView
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.myshoppal.R
 import com.example.myshoppal.databinding.FragmentDashboardBinding
 import com.example.myshoppal.firestore.FirestoreClass
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.ui.CartListActivity
-import com.example.myshoppal.ui.ProductDetailsActivity
 import com.example.myshoppal.ui.SettingsActivity
 import com.example.myshoppal.ui.adapters.DashboardItemsListAdapter
-import com.example.myshoppal.utils.Constants
 
 class DashboardFragment : BaseFragment() {
     private var _binding: FragmentDashboardBinding? = null

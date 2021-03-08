@@ -101,11 +101,16 @@ class CheckoutActivity : BaseActivity() {
             subTotal.toString(),
             "10.0", // The Shipping Charge is fixed as $10 for now in our case.
             total.toString(),
+            System.currentTimeMillis()
         )
         FirestoreClass().placeOrder(this, order)
     }
 
     fun orderPlaceSuccess(){
+        FirestoreClass().updateCartDetails(this, cartItems)
+    }
+
+    fun allDetailUpdatedSuccessfully(){
         hideProgressDialog()
         Toast.makeText(this, "Your order was placed success!", Toast.LENGTH_LONG).show()
         val intent = Intent(this, DashboardActivity::class.java)

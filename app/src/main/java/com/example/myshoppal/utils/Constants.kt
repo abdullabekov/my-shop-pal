@@ -42,6 +42,7 @@ object Constants {
 
     const val PRODUCT_ID = "product_id"
     const val CART_QUANTITY = "cart_quantity"
+    const val STOCK_QUANTITY = "stock_quantity"
 
     const val HOME = "Home"
     const val OFFICE = "Office"
@@ -55,6 +56,8 @@ object Constants {
     const val ADD_ADDRESS_REQUEST_CODE = 121
 
     const val ORDERS = "orders"
+
+    const val EXTRA_MY_ORDER_DETAILS = "extra_my_order_details"
 
     fun showImageChooser(activity: Activity) {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)

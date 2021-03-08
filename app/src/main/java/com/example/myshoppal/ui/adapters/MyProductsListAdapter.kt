@@ -1,6 +1,5 @@
 package com.example.myshoppal.ui.adapters
 
-import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myshoppal.databinding.ItemListLayoutBinding
 import com.example.myshoppal.model.Product
 import com.example.myshoppal.ui.ProductDetailsActivity
-import com.example.myshoppal.ui.main.ProductsFragment
+import com.example.myshoppal.ui.fragments.ProductsFragment
 import com.example.myshoppal.utils.Constants.EXTRA_PRODUCT_ID
 import com.example.myshoppal.utils.Constants.EXTRA_PRODUCT_OWNER_ID
 import com.example.myshoppal.utils.GlideLoader
